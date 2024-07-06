@@ -6,7 +6,19 @@
         <description>Recent content on My New Hugo Site</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
-        <lastBuildDate>Tue, 28 May 2019 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Sat, 06 Jul 2024 19:00:35 +0800</lastBuildDate><atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>My First Post</title>
+        <link>http://localhost:1313/post/frist/</link>
+        <pubDate>Sat, 06 Jul 2024 19:00:35 +0800</pubDate>
+        
+        <guid>http://localhost:1313/post/frist/</guid>
+        <description>&lt;h1 id=&#34;大家好欢迎来到我的博客&#34;&gt;大家好！欢迎来到我的博客。
+&lt;/h1&gt;&lt;p&gt;在这里，我将分享我的学习历程、心得体会和经验。 我相信这是一段不断进步的旅程，每一个小进步都会带来巨大的收获。 我会努力更新博客，记录我的学习进展，希望与大家一起交流、学习和成长。&lt;/p&gt;
+&lt;p&gt;无论您初学者还是有经验的技术人员，都希望我的博客能为您提供一些有用的信息和启发。如果您有任何问题或建议，欢迎在评论留言，我们一起讨论，共同进步。&lt;/p&gt;
+&lt;p&gt;让我们一起努力学习吧！&lt;/p&gt;
+</description>
+        </item>
+        <item>
         <title>Archives</title>
         <link>http://localhost:1313/page/archives/</link>
         <pubDate>Tue, 28 May 2019 00:00:00 +0000</pubDate>

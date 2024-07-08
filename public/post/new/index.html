@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="根据作者的 README.md 可得知，git 仓库中没有数据集，需要自己下载。 该项目用到的制作数据集下载地址： 百度网盘（密码: ara8） 下载后可以看到有两个之前报错的点，因为缺少 handpose_datasets_v2/v1 的数据集。将这个数据集放到根目录下即可正常运行。运行方式是在打包的 zip 项目下的 ./image 文件夹中，有照片识别这些照片手指的位置。 至此已完成引用数据集。项目链接： https://github.com/EricLee2021-72324/handpose_x 手势识别 环境要求： Python 3.7 PyTorch &gt;= 1.5.1 OpenCV-Python Windows 安装步骤： 安装 Anaconda 打开 anaconda.com，下载并安装后，配置环境变量。在 bin 中找到 conda.exe，然后将 bin 的路径复制到环境变量的 PATH 中。打开 cmd 输入： conda -V 验证 Anaconda 安装成功。 安装 CUDA 按照开源文件所示需要安装 CUDA。安装 10.2 版本的 CUDA（因为文件中需要 1.5.1 版本的 PyTorch）。安装完成后输入： nvcc -V 验证 CUDA 安装成功。 部署 Conda 环境 按照开源文件显示需要 Python 3.7 的环境，在 cmd 中创建环境： conda create -n py37 python=3.">
+<title>如何部署OpenCV在ESP32中的手势识别项目</title>
+
+<link rel='canonical' href='http://localhost:1313/post/new/'>
+
+<link rel="stylesheet" href="/scss/style.min.0304c6baf04e01a8fe70693791cb744d56a3578a3120a8796cefc66825aa39c7.css"><meta property='og:title' content="如何部署OpenCV在ESP32中的手势识别项目">
+<meta property='og:description' content="根据作者的 README.md 可得知，git 仓库中没有数据集，需要自己下载。 该项目用到的制作数据集下载地址： 百度网盘（密码: ara8） 下载后可以看到有两个之前报错的点，因为缺少 handpose_datasets_v2/v1 的数据集。将这个数据集放到根目录下即可正常运行。运行方式是在打包的 zip 项目下的 ./image 文件夹中，有照片识别这些照片手指的位置。 至此已完成引用数据集。项目链接： https://github.com/EricLee2021-72324/handpose_x 手势识别 环境要求： Python 3.7 PyTorch &gt;= 1.5.1 OpenCV-Python Windows 安装步骤： 安装 Anaconda 打开 anaconda.com，下载并安装后，配置环境变量。在 bin 中找到 conda.exe，然后将 bin 的路径复制到环境变量的 PATH 中。打开 cmd 输入： conda -V 验证 Anaconda 安装成功。 安装 CUDA 按照开源文件所示需要安装 CUDA。安装 10.2 版本的 CUDA（因为文件中需要 1.5.1 版本的 PyTorch）。安装完成后输入： nvcc -V 验证 CUDA 安装成功。 部署 Conda 环境 按照开源文件显示需要 Python 3.7 的环境，在 cmd 中创建环境： conda create -n py37 python=3.">
+<meta property='og:url' content='http://localhost:1313/post/new/'>
+<meta property='og:site_name' content='My New Hugo Site'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2024-07-08T21:00:56&#43;08:00'/><meta property='article:modified_time' content='2024-07-08T21:00:56&#43;08:00'/>
+<meta name="twitter:title" content="如何部署OpenCV在ESP32中的手势识别项目">
+<meta name="twitter:description" content="根据作者的 README.md 可得知，git 仓库中没有数据集，需要自己下载。 该项目用到的制作数据集下载地址： 百度网盘（密码: ara8） 下载后可以看到有两个之前报错的点，因为缺少 handpose_datasets_v2/v1 的数据集。将这个数据集放到根目录下即可正常运行。运行方式是在打包的 zip 项目下的 ./image 文件夹中，有照片识别这些照片手指的位置。 至此已完成引用数据集。项目链接： https://github.com/EricLee2021-72324/handpose_x 手势识别 环境要求： Python 3.7 PyTorch &gt;= 1.5.1 OpenCV-Python Windows 安装步骤： 安装 Anaconda 打开 anaconda.com，下载并安装后，配置环境变量。在 bin 中找到 conda.exe，然后将 bin 的路径复制到环境变量的 PATH 中。打开 cmd 输入： conda -V 验证 Anaconda 安装成功。 安装 CUDA 按照开源文件所示需要安装 CUDA。安装 10.2 版本的 CUDA（因为文件中需要 1.5.1 版本的 PyTorch）。安装完成后输入： nvcc -V 验证 CUDA 安装成功。 部署 Conda 环境 按照开源文件显示需要 Python 3.7 的环境，在 cmd 中创建环境： conda create -n py37 python=3.">
+  
+
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column compact"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_huda2458f72ce188392d75c5d51cd8e24e_373_300x0_resize_box_3.png" width="200"
+                            height="200" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">My New Hugo Site</a></h1>
+            <h2 class="site-description"></h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/_index.zh-cn/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/page/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/page/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/page/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/page/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>Dark Mode</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/post/new/">如何部署OpenCV在ESP32中的手势识别项目</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jul 08, 2024</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    2 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+
+</header>
+
+    <section class="article-content">
+    
+    
+    <p>根据作者的 README.md 可得知，git 仓库中没有数据集，需要自己下载。</p>
+<ul>
+<li>该项目用到的制作数据集下载地址：
+<ul>
+<li><a class="link" href="https://pan.baidu.com/s/1KY7lAFXBTfrFHlApxTY8NA"  target="_blank" rel="noopener"
+    >百度网盘</a>（密码: ara8）</li>
+</ul>
+</li>
+</ul>
+<p>下载后可以看到有两个之前报错的点，因为缺少 handpose_datasets_v2/v1 的数据集。将这个数据集放到根目录下即可正常运行。运行方式是在打包的 zip 项目下的 ./image 文件夹中，有照片识别这些照片手指的位置。</p>
+<p>至此已完成引用数据集。项目链接：
+<a class="link" href="https://github.com/EricLee2021-72324/handpose_x"  target="_blank" rel="noopener"
+    >https://github.com/EricLee2021-72324/handpose_x</a></p>
+<h2 id="手势识别">手势识别
+</h2><h3 id="环境要求">环境要求：
+</h3><ul>
+<li>Python 3.7</li>
+<li>PyTorch &gt;= 1.5.1</li>
+<li>OpenCV-Python</li>
+</ul>
+<h3 id="windows-安装步骤">Windows 安装步骤：
+</h3><ol>
+<li>
+<p><strong>安装 Anaconda</strong></p>
+<p>打开 <a class="link" href="https://www.anaconda.com"  target="_blank" rel="noopener"
+    >anaconda.com</a>，下载并安装后，配置环境变量。在 bin 中找到 conda.exe，然后将 bin 的路径复制到环境变量的 PATH 中。打开 cmd 输入：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>conda -V
+</span></span></code></pre></div><p>验证 Anaconda 安装成功。</p>
+</li>
+<li>
+<p><strong>安装 CUDA</strong></p>
+<p>按照开源文件所示需要安装 CUDA。安装 10.2 版本的 CUDA（因为文件中需要 1.5.1 版本的 PyTorch）。安装完成后输入：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>nvcc -V
+</span></span></code></pre></div><p>验证 CUDA 安装成功。</p>
+</li>
+<li>
+<p><strong>部署 Conda 环境</strong></p>
+<p>按照开源文件显示需要 Python 3.7 的环境，在 cmd 中创建环境：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>conda create -n py37 python<span style="color:#f92672">=</span>3.7
+</span></span></code></pre></div><p>激活并使用环境：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>conda activate py37
+</span></span></code></pre></div><p>如果经常忘记 <code>activate</code> 怎么拼写，使用 <code>conda activate py37</code> 打开帮助，第一行就是这个单词。</p>
+</li>
+<li>
+<p><strong>安装 PyTorch</strong></p>
+<p>按照作者要求安装 1.5.1 版本的 PyTorch：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>pip install torch<span style="color:#f92672">===</span>1.5.1 torchvision<span style="color:#f92672">===</span>0.6.1 -f https://download.pytorch.org/whl/torch_stable.html -i https://pypi.douban.com/simple
+</span></span></code></pre></div><p>或者使用 Conda 安装：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>conda install pytorch torchvision cudatoolkit<span style="color:#f92672">=</span>10.2
+</span></span></code></pre></div></li>
+<li>
+<p><strong>安装 OpenCV-Python</strong></p>
+<p>一行命令安装：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>pip install opencv-python
+</span></span></code></pre></div><p>下载完成后用以下命令检查安装是否成功：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> cv2
+</span></span></code></pre></div></li>
+<li>
+<p><strong>从 GitHub 下载项目</strong></p>
+<p>下载 zip 压缩包，解压后打开 cmd：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cd 安装位置
+</span></span></code></pre></div><p>至此环境已经安装完毕。</p>
+</li>
+</ol>
+<h3 id="实现手势识别">实现手势识别
+</h3><p>使用以下 Python 代码实现手势识别：</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> os
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> sys
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> cv2
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> numpy <span style="color:#66d9ef">as</span> np
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> onnxruntime
+</span></span><span style="display:flex;"><span><span style="color:#f92672">from</span> hand_data_iter.datasets <span style="color:#f92672">import</span> draw_bd_handpose
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">ONNXModel</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, onnx_path, gpu_cfg<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>):
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>onnx_session <span style="color:#f92672">=</span> onnxruntime<span style="color:#f92672">.</span>InferenceSession(onnx_path)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> gpu_cfg:
+</span></span><span style="display:flex;"><span>            self<span style="color:#f92672">.</span>onnx_session<span style="color:#f92672">.</span>set_providers([<span style="color:#e6db74">&#39;CUDAExecutionProvider&#39;</span>], [{<span style="color:#e6db74">&#39;device_id&#39;</span>: <span style="color:#ae81ff">0</span>}])
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>input_name <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>get_input_name(self<span style="color:#f92672">.</span>onnx_session)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>output_name <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>get_output_name(self<span style="color:#f92672">.</span>onnx_session)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_output_name</span>(self, onnx_session):
+</span></span><span style="display:flex;"><span>        output_name <span style="color:#f92672">=</span> []
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> node <span style="color:#f92672">in</span> onnx_session<span style="color:#f92672">.</span>get_outputs():
+</span></span><span style="display:flex;"><span>            output_name<span style="color:#f92672">.</span>append(node<span style="color:#f92672">.</span>name)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> output_name
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_input_name</span>(self, onnx_session):
+</span></span><span style="display:flex;"><span>        input_name <span style="color:#f92672">=</span> []
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> node <span style="color:#f92672">in</span> onnx_session<span style="color:#f92672">.</span>get_inputs():
+</span></span><span style="display:flex;"><span>            input_name<span style="color:#f92672">.</span>append(node<span style="color:#f92672">.</span>name)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> input_name
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_input_feed</span>(self, input_name, image_numpy):
+</span></span><span style="display:flex;"><span>        input_feed <span style="color:#f92672">=</span> {}
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> name <span style="color:#f92672">in</span> input_name:
+</span></span><span style="display:flex;"><span>            input_feed[name] <span style="color:#f92672">=</span> image_numpy
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> input_feed
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, image_numpy):
+</span></span><span style="display:flex;"><span>        input_feed <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>get_input_feed(self<span style="color:#f92672">.</span>input_name, image_numpy)
+</span></span><span style="display:flex;"><span>        output <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>onnx_session<span style="color:#f92672">.</span>run(self<span style="color:#f92672">.</span>output_name, input_feed<span style="color:#f92672">=</span>input_feed)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> output
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;__main__&#34;</span>:
+</span></span><span style="display:flex;"><span>    img_size <span style="color:#f92672">=</span> <span style="color:#ae81ff">256</span>
+</span></span><span style="display:flex;"><span>    model <span style="color:#f92672">=</span> ONNXModel(<span style="color:#e6db74">&#34;resnet_50_size-256.onnx&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    cap <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>VideoCapture(<span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">while</span> <span style="color:#66d9ef">True</span>:
+</span></span><span style="display:flex;"><span>        ret, frame <span style="color:#f92672">=</span> cap<span style="color:#f92672">.</span>read()
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> ret:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        img_width <span style="color:#f92672">=</span> frame<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">1</span>]
+</span></span><span style="display:flex;"><span>        img_height <span style="color:#f92672">=</span> frame<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>]
+</span></span><span style="display:flex;"><span>        img <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>resize(frame, (img_size, img_size), interpolation<span style="color:#f92672">=</span>cv2<span style="color:#f92672">.</span>INTER_CUBIC)
+</span></span><span style="display:flex;"><span>        img_ndarray <span style="color:#f92672">=</span> img<span style="color:#f92672">.</span>transpose((<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>))
+</span></span><span style="display:flex;"><span>        img_ndarray <span style="color:#f92672">=</span> img_ndarray <span style="color:#f92672">/</span> <span style="color:#ae81ff">255.0</span>
+</span></span><span style="display:flex;"><span>        img_ndarray <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>expand_dims(img_ndarray, <span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        output <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>forward(img_ndarray<span style="color:#f92672">.</span>astype(<span style="color:#e6db74">&#39;float32&#39;</span>))[<span style="color:#ae81ff">0</span>][<span style="color:#ae81ff">0</span>]
+</span></span><span style="display:flex;"><span>        output <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>array(output)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        pts_hand <span style="color:#f92672">=</span> {}
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(int(output<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">/</span> <span style="color:#ae81ff">2</span>)):
+</span></span><span style="display:flex;"><span>            x <span style="color:#f92672">=</span> (output[i <span style="color:#f92672">*</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">0</span>] <span style="color:#f92672">*</span> float(img_width))
+</span></span><span style="display:flex;"><span>            y <span style="color:#f92672">=</span> (output[i <span style="color:#f92672">*</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>] <span style="color:#f92672">*</span> float(img_height))
+</span></span><span style="display:flex;"><span>            pts_hand[str(i)] <span style="color:#f92672">=</span> {<span style="color:#e6db74">&#34;x&#34;</span>: x, <span style="color:#e6db74">&#34;y&#34;</span>: y}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        draw_bd_handpose(frame, pts_hand, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(int(output<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">/</span> <span style="color:#ae81ff">2</span>)):
+</span></span><span style="display:flex;"><span>            x <span style="color:#f92672">=</span> (output[i <span style="color:#f92672">*</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">0</span>] <span style="color:#f92672">*</span> float(img_width))
+</span></span><span style="display:flex;"><span>            y <span style="color:#f92672">=</span> (output[i <span style="color:#f92672">*</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>] <span style="color:#f92672">*</span> float(img_height))
+</span></span><span style="display:flex;"><span>            cv2<span style="color:#f92672">.</span>circle(frame, (int(x), int(y)), <span style="color:#ae81ff">3</span>, (<span style="color:#ae81ff">255</span>, <span style="color:#ae81ff">50</span>, <span style="color:#ae81ff">60</span>), <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>            cv2<span style="color:#f92672">.</span>circle(frame, (int(x), int(y)), <span style="color:#ae81ff">1</span>, (<span style="color:#ae81ff">255</span>, <span style="color:#ae81ff">150</span>, <span style="color:#ae81ff">180</span>), <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        cv2<span style="color:#f92672">.</span>imshow(<span style="color:#e6db74">&#39;image&#39;</span>, frame)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> cv2<span style="color:#f92672">.</span>waitKey(<span style="color:#ae81ff">1</span>) <span style="color:#f92672">==</span> <span style="color:#ae81ff">27</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">break</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    cap<span style="color:#f92672">.</span>release()
+</span></span><span style="display:flex;"><span>    cv2<span style="color:#f92672">.</span>destroyAllWindows()
+</span></span></code></pre></div><p>以上代码实现了摄像头捕捉手部图像并使用 ONNX 模型进行手势识别。但存在以下问题：</p>
+<ul>
+<li>只能识别一只手，无法识别两只手或左右手。</li>
+<li>当画面没有手时会乱识别。</li>
+<li>当手在摄像头拍摄范围边缘时，手掌位置识别错误。</li>
+<li>手掌方向识别良好，但手背识别较差。</li>
+</ul>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+        2024 My New Hugo Site
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.26.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

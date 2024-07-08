@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "frist.md",
+                "file": "new.md",
                 "mode": "source",
                 "source": false
               }
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "frist.md",
+                "file": "new.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -102,7 +102,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "frist.md",
+                "file": "new.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               }
@@ -125,7 +125,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "frist.md"
+                "file": "new.md"
               }
             }
           }
@@ -147,5 +147,9 @@
     }
   },
   "active": "db20cf3d10fa940e",
-  "lastOpenFiles": []
+  "lastOpenFiles": [
+    "frist.md",
+    "new.md",
+    "未命名"
+  ]
 }
